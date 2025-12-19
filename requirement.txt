@@ -1,5 +1,12 @@
+streamlit
 pandas
+numpy
 scikit-learn
 joblib
 imbalanced-learn
-streamlit
+catboost
+lightgbm
+tensorflow
+shap
+matplotlib
+seaborn
