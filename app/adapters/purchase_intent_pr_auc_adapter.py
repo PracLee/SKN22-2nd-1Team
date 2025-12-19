@@ -5,8 +5,8 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 
-from src.adapters.model_loader import JoblibArtifactLoader
-
+# from src.adapters.model_loader import JoblibArtifactLoader
+from adapters.model_loader import JoblibArtifactLoader
 
 class PurchaseIntentPRAUCModelAdapter:
     """
