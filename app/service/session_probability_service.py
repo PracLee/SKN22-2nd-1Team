@@ -59,24 +59,43 @@ class SessionProbabilityService:
             reasons=reasons,
             average_text=avg_text,
         )
-
+        
     def _get_risk_band_and_label(self, prob: float):
-        if prob >= 0.7:
+        """
+        확률 구간에 따라 라벨링
+        - 0.60 이상: 높음
+        - 0.30 ~ 0.60: 보통
+        - 0.30 미만: 낮음
+        """
+        if prob >= 0.60:
             return "high", "구매 가능성 높음"
-        elif prob >= 0.4:
-            return "medium", "구매 가능성 중간"
+        elif prob >= 0.30:
+            return "medium", "구매 가능성 보통"
         else:
             return "low", "구매 가능성 낮음"
-
+    
     def _build_compare_text(self, prob: float, avg_prob: float) -> str:
+        """
+        평균 대비 차이를 '배'가 아닌 '퍼센트포인트' 단위로 표시
+        예) 평균 15.0%, 현재 34.9% -> "19.9%p 높습니다."
+        """
         if avg_prob <= 0:
             return "평균 값이 정의되어 있지 않아 비교가 어렵습니다."
 
-        diff_ratio = (prob - avg_prob) / avg_prob * 100
-        if diff_ratio >= 0:
-            return f"이 세션은 평균보다 **{diff_ratio:.1f}% 더 높습니다.**"
-        else:
-            return f"이 세션은 평균보다 **{abs(diff_ratio):.1f}% 더 낮습니다.**"
+        diff_pp = (prob - avg_prob) * 100  # percentage points
+        avg_percent = avg_prob * 100
+
+        if abs(diff_pp) < 0.05:
+            # 거의 차이 없을 때
+            return f"이 세션의 구매 확률은 평균({avg_percent:.1f}%)과 거의 같습니다."
+
+        direction = "높습니다" if diff_pp > 0 else "낮습니다"
+        diff_abs = abs(diff_pp)
+
+        return (
+            f"이 세션의 구매 확률은 평균({avg_percent:.1f}%)보다 "
+            f"{diff_abs:.1f}%p {direction}."
+        )
 
     def _build_explanation(
         self,
@@ -119,13 +138,31 @@ class SessionProbabilityService:
                 reasons.append("주말 방문 세션으로, 여유 있는 쇼핑 가능성이 있습니다.")
             else:
                 reasons.append("평일 방문 세션으로, 짧은 탐색 후 이탈할 수도 있습니다.")
-
-        diff = prob - avg_prob
-        if diff >= 0.1:
-            avg_text = f"이 세션의 구매 확률은 전체 평균보다 약 {diff * 100:.1f}%p 높습니다."
-        elif diff <= -0.1:
-            avg_text = f"이 세션의 구매 확률은 전체 평균보다 약 {abs(diff) * 100:.1f}%p 낮습니다."
+                
+        diff_pp = (prob - avg_prob) * 100
+        if diff_pp >= 10:
+            avg_text = f"이 세션의 구매 확률은 전체 평균보다 약 {diff_pp:.1f}%p 높습니다."
+        elif diff_pp <= -10:
+            avg_text = f"이 세션의 구매 확률은 전체 평균보다 약 {abs(diff_pp):.1f}%p 낮습니다."
         else:
             avg_text = "이 세션의 구매 확률은 전체 평균과 비슷한 수준입니다."
 
         return reasons, avg_text
+
+    def get_training_data(self) -> pd.DataFrame:
+        """
+        학습에 사용된 원본 데이터를 로드하여 반환합니다.
+        (EDA 및 시각화용)
+        """
+        # Adapter Config에서 root_dir을 가져옴
+        root_dir = self.adapter.config.root_dir
+        data_path = root_dir / "data" / "processed" / "train.csv"
+
+        if not data_path.exists():
+            raise FileNotFoundError(f"Training data not found at: {data_path}")
+
+        df = pd.read_csv(data_path)
+        if "row_id" in df.columns:
+            df = df.drop(columns=["row_id"])
+        
+        return df

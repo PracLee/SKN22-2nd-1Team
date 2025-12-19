@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from src.adapters.purchase_intent_pr_auc_adapter import PurchaseIntentPRAUCModelAdapter
+from adapters.purchase_intent_pr_auc_adapter import PurchaseIntentPRAUCModelAdapter
 
 
 
