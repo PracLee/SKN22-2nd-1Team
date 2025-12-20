@@ -39,3 +39,5 @@ class PurchaseIntentService:
         if purchase_proba >= 0.6:
             return "구매 가능성이 높습니다. 추가 개입 없이 구매 흐름을 유지하세요."
         return "현재는 관찰이 필요한 세션입니다."
+    
+     #PurchaseIntentService10
