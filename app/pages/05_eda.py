@@ -66,66 +66,31 @@ if df is not None:
     st.markdown("---")
 
     # ----------------------------------------------------
-    # 2. 주요 변수 분포 비교 (Model Selection & Prediction)
+    # ----------------------------------------------------
+    # 2. 주요 변수 분포 비교
     # ----------------------------------------------------
     st.header("2. 주요 변수 분포 비교")
 
-    # (New Position) 모델 선택
-    model_option = st.radio(
-        "⚙️ 사용할 모델을 선택하세요:",
-        ("ROC-AUC 기준 베스트 모델 사용", "PR-AUC 기준 베스트 모델 사용"),
-        horizontal=True
+    # target_col 선택 (Revenue류 제외) 리스트 생성 및 정렬
+    selectable_cols = [c for c in numeric_cols if c != 'Revenue']
+
+    # PageValues를 최상단으로 이동 (관심도 높은 변수)
+    if 'PageValues' in selectable_cols:
+        selectable_cols.remove('PageValues')
+        selectable_cols.insert(0, 'PageValues')
+
+    # row_id를 최하단으로 이동 (단순 식별자)
+    if 'row_id' in selectable_cols:
+        selectable_cols.remove('row_id')
+        selectable_cols.append('row_id')
+
+    target_col = st.selectbox(
+        "분석할 변수를 선택하세요:",
+        selectable_cols
     )
-
-    if model_option == "ROC-AUC 기준 베스트 모델 사용":
-        model_filename = "best_balancedrf_pipeline.joblib"
-    else:
-        model_filename = "best_pr_auc_balancedrf.joblib"
-
-    model_path = ARTIFACTS_DIR / model_filename
     
-    # 선택된 모델로 어댑터 다시 가져오기
-    # (get_adapter는 캐시되므로 같은 경로면 재사용됨)
-    selected_adapter = get_adapter(str(model_path))
-
-    # 선택된 모델 정보 표시
-    try:
-        threshold = selected_adapter.get_threshold()
-        st.info(f"✅ **선택된 모델:** {model_option} | **Threshold:** {threshold:.4f} | **File:** `{model_filename}`")
-    except Exception as e:
-        st.warning(f"모델 정보를 불러오는 중 오류 발생: {e}")
-
-    # 모델 예측 수행 (df에 컬럼 추가)
-    with st.spinner("모델 예측 중..."):
-        try:
-            preds = selected_adapter.predict(df) 
-            df['Predicted_Revenue'] = preds
-        except Exception as e:
-            st.error(f"예측 수행 중 오류 발생: {e}")
-            # 에러 발생 시 Predicted_Revenue 없이 진행
-
-    col_sel1, col_sel2 = st.columns(2)
-    with col_sel1:
-        # target_col 선택 (Revenue류 제외)
-        target_col = st.selectbox(
-            "분석할 변수를 선택하세요:",
-            [c for c in numeric_cols if c not in ['Revenue', 'Predicted_Revenue']]
-        )
-    with col_sel2:
-        # 그룹 기준 선택
-        # 예측 실패 시 옵션 조정
-        group_options = ["Revenue (실제값)"]
-        if 'Predicted_Revenue' in df.columns:
-            group_options.append("Predicted_Revenue (예측값)")
-            
-        group_col = st.radio(
-            "그룹 기준 선택:",
-            group_options,
-            horizontal=True
-        )
-    
-    # 선택된 그룹 컬럼명 매핑
-    group_key = 'Revenue' if group_col.startswith("Revenue") else 'Predicted_Revenue'
+    # 그룹 기준은 실제값(Revenue)으로 고정
+    group_key = 'Revenue'
 
     fig_dist = px.box(
         df, 
