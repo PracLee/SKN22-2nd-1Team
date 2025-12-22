@@ -1,6 +1,4 @@
-# app/pages/08_ab_test.py
-
-import sys, os
+import sys, os 
 
 # pages → app
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -21,13 +19,13 @@ import numpy as np
 # -------------------------------
 # 데이터 / 모델 경로
 # -------------------------------
-BASE_DIR = os.path.abspath(os.path.join(APP_DIR, ".."))  # app → 2nd
+BASE_DIR = os.path.abspath(os.path.join(APP_DIR, ".."))
 TRAIN_PATH = os.path.join(BASE_DIR, "data/processed/train.csv")
 TEST_PATH = os.path.join(BASE_DIR, "data/processed/test.csv")
 MODEL_PATH = os.path.join(BASE_DIR, "app/artifacts/best_balancedrf_pipeline.joblib")
 
 # -------------------------------
-# 1. 데이터 / 모델 로드
+# 데이터 / 모델 로드
 # -------------------------------
 X_train = pd.read_csv(TRAIN_PATH)
 X_test = pd.read_csv(TEST_PATH)
@@ -36,12 +34,17 @@ model_dict = joblib.load(MODEL_PATH)
 pipeline = model_dict["pipeline"]
 best_threshold = model_dict["best_threshold"]
 
-# 무작위 샘플 선택
-sample_idx = np.random.choice(X_test.index, size=5, replace=False)
-X_sample = X_test.loc[sample_idx]
+# -------------------------------
+# 샘플 고정 (Streamlit rerun 방지)
+# -------------------------------
+if "base_idx" not in st.session_state:
+    st.session_state["base_idx"] = int(np.random.choice(X_test.index, size=1)[0])
+
+base_idx = st.session_state["base_idx"]
+X_base = X_test.loc[[base_idx]]  # 1행 DataFrame 고정
 
 # -------------------------------
-# 2. 페이지 타이틀
+# 페이지 타이틀
 # -------------------------------
 st.title("Scenario 비교 시뮬레이터")
 
@@ -49,7 +52,7 @@ indicator_desc = {
     "BounceRates": "단일 페이지 방문 후 이탈한 세션의 비율",
     "ExitRates": "해당 페이지에서 세션이 종료된 비율",
     "PageValues": "페이지 방문이 전환에 기여한 기여도 (0~100 기준)",
-    "ProductRelated_Duration": "상품 관련 페이지 체류 시간(초)  ",
+    "ProductRelated_Duration": "상품 관련 페이지 체류 시간(초)",
 }
 
 direction_hint = {
@@ -63,74 +66,50 @@ cols = list(indicator_desc.keys())
 scenario_a = {}
 scenario_b = {}
 
-# PageValues 최대값 기준 100% 환산
 pagevalues_max = X_train["PageValues"].max()
 
 # 좌우 컬럼 생성
 col_left, col_right = st.columns(2)
 
+# -------------------------------
 # 좌측: Scenario 입력
+# -------------------------------
 with col_left:
     st.subheader("Scenario A")
     for col in cols:
         if col == "PageValues":
-            min_val = 0.0
-            max_val = 100.0
-            default_val = float(X_sample[col].iloc[0]) / pagevalues_max * 100
+            min_val, max_val = 0.0, 100.0
+            default_val = float(X_base[col].iloc[0]) / pagevalues_max * 100
             st.markdown(f"**{col}** — {indicator_desc[col]}")
-            scenario_a[col] = st.slider(
-                label="",
-                min_value=min_val,
-                max_value=max_val,
-                value=default_val,
-                step=1.0,
-                key=f"A_{col}",
-            )
-            scenario_a[col] = scenario_a[col] / 100 * pagevalues_max
+            slider_val = st.slider("", min_val, max_val, default_val, step=1.0, key=f"A_{col}")
+            scenario_a[col] = float(slider_val) / 100 * pagevalues_max
         else:
-            min_val = float(X_train[col].min())
-            max_val = float(X_train[col].max())
+            min_val, max_val = float(X_train[col].min()), float(X_train[col].max())
             st.markdown(f"**{col}** — {indicator_desc[col]}")
-            scenario_a[col] = st.slider(
-                label="",
-                min_value=min_val,
-                max_value=max_val,
-                value=float(X_sample[col].iloc[0]),
-                key=f"A_{col}",
-            )
+            slider_val = st.slider("", min_val, max_val, float(X_base[col].iloc[0]), key=f"A_{col}")
+            scenario_a[col] = float(slider_val)
 
     st.subheader("Scenario B")
     for col in cols:
         if col == "PageValues":
-            min_val = 0.0
-            max_val = 100.0
-            default_val = float(X_sample[col].iloc[0]) / pagevalues_max * 100
+            min_val, max_val = 0.0, 100.0
+            default_val = float(X_base[col].iloc[0]) / pagevalues_max * 100
             st.markdown(f"**{col}** — {indicator_desc[col]}")
-            scenario_b[col] = st.slider(
-                label="",
-                min_value=min_val,
-                max_value=max_val,
-                value=default_val,
-                step=1.0,
-                key=f"B_{col}",
-            )
-            scenario_b[col] = scenario_b[col] / 100 * pagevalues_max
+            slider_val = st.slider("", min_val, max_val, default_val, step=1.0, key=f"B_{col}")
+            scenario_b[col] = float(slider_val) / 100 * pagevalues_max
         else:
-            min_val = float(X_train[col].min())
-            max_val = float(X_train[col].max())
+            min_val, max_val = float(X_train[col].min()), float(X_train[col].max())
             st.markdown(f"**{col}** — {indicator_desc[col]}")
-            scenario_b[col] = st.slider(
-                label="",
-                min_value=min_val,
-                max_value=max_val,
-                value=float(X_sample[col].iloc[0]),
-                key=f"B_{col}",
-            )
+            slider_val = st.slider("", min_val, max_val, float(X_base[col].iloc[0]), key=f"B_{col}")
+            scenario_b[col] = float(slider_val)
 
+# -------------------------------
 # 우측: 결과 출력
+# -------------------------------
 with col_right:
-    X_a = X_sample.copy()
-    X_b = X_sample.copy()
+    # 독립적 DataFrame 생성 (A/B 슬라이더 독립성 보장)
+    X_a = pd.DataFrame([X_base.iloc[0].copy()])
+    X_b = pd.DataFrame([X_base.iloc[0].copy()])
     for col in cols:
         X_a[col] = scenario_a[col]
         X_b[col] = scenario_b[col]
@@ -144,13 +123,11 @@ with col_right:
     st.write(f"Scenario A 구매 확률: {prob_a:.2%}")
     st.write(f"Scenario B 구매 확률: {prob_b:.2%}")
 
-    data_scenario = pd.DataFrame(
-        {
-            "category": ["Scenario A", "Scenario B", "결정 기준값"],
-            "value": [prob_a, prob_b, best_threshold],
-            "color": ["red", "green", "blue"],  # 색상 지정
-        }
-    )
+    data_scenario = pd.DataFrame({
+        "category": ["Scenario A", "Scenario B", "결정 기준값"],
+        "value": [prob_a, prob_b, best_threshold],
+        "color": ["red", "green", "blue"],
+    })
 
     chart_scenario = (
         alt.Chart(data_scenario)
@@ -158,7 +135,8 @@ with col_right:
         .encode(
             x=alt.X("category:N", axis=alt.Axis(labelAngle=0)),
             y=alt.Y("value:Q", scale=alt.Scale(domain=[0.0, 1.0])),
-            color=alt.Color("color:N", scale=None)  # 지정한 색상 그대로 적용
+            color=alt.Color("color:N", scale=None),
+            order=alt.Order('category', sort='ascending')  # '결정 기준값' 항상 우측
         )
     )
 
