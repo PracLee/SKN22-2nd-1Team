@@ -78,7 +78,7 @@ if df is not None:
         'ProductRelated': '제품 관련 페이지 조회 수',
         'ProductRelated_Duration': '제품 관련 페이지 체류 시간',
         'BounceRates': '이탈률',
-        'ExitRates': '종료률',
+        'ExitRates': '종료율',
         'PageValues': '페이지 가치',
         'SpecialDay': '기념일',
         'Month': '월',
