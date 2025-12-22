@@ -78,7 +78,7 @@ def load_resources():
         st.stop()
         
     artifact = joblib.load(main_model_path)
-    pipeline = artifact["pipeline"] if isinstance(artifact, dict) else artifact
+    pipeline = artifact["base_pipeline"] if isinstance(artifact, dict) else artifact
     
     return pipeline, df
 

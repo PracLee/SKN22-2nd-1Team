@@ -81,7 +81,7 @@ def load_all():
         st.stop()
         
     main_art = joblib.load(main_model_file)
-    main_pipe = main_art["pipeline"] if isinstance(main_art, dict) else main_art
+    main_pipe = main_art["base_pipeline"] if isinstance(main_art, dict) else main_art
     
     # 비교 모델들
     others = {}

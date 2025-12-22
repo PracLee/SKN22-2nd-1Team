@@ -1,9 +1,15 @@
 {
   "seed": 42,
-  "test_size": 0.2,
   "target": "Revenue",
-  "train_positive_rate": 0.15470397404703973,
-  "test_positive_rate": 0.1549067315490673,
-  "n_train": 9864,
-  "n_test": 2466
+  "test_size_of_total": 0.2,
+  "calib_size_within_train": 0.2,
+  "calib_size_of_total": 0.16000000000000003,
+  "train_size_of_total": 0.6400000000000001,
+  "n_total": 12330,
+  "n_train": 7891,
+  "n_calib": 1973,
+  "n_test": 2466,
+  "train_positive_rate": 0.15473324040045622,
+  "calib_positive_rate": 0.15458692346680183,
+  "test_positive_rate": 0.1549067315490673
 }
