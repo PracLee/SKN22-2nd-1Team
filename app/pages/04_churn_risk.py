@@ -269,7 +269,7 @@ from adapters.purchase_intent_pr_auc_adapter import PurchaseIntentPRAUCModelAdap
 # =========================================================
 @st.cache_resource
 def init_service():
-    model_path = os.path.join(project_root, "artifacts", "best_pr_auc_balancedrf.joblib")
+    model_path = os.path.join(app_dir, "artifacts", "best_pr_auc_balancedrf.joblib")
 
     if not os.path.exists(model_path):
         st.error(f"❌ 모델 파일이 존재하지 않습니다: {model_path}")

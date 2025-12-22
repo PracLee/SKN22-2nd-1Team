@@ -239,7 +239,7 @@ from service.CustomerCareCenter import PurchaseIntentService
 # =========================================================
 @st.cache_resource
 def init_service():
-    artifact_path = PROJECT_ROOT / "artifacts" / "best_pr_auc_balancedrf.joblib"
+    artifact_path = PROJECT_ROOT / "app" / "artifacts" / "best_pr_auc_balancedrf.joblib"
 
     # 🔧 수정: 파일 존재 여부 체크 (다른 PC에서도 원인 파악 쉬움)
     if not artifact_path.exists():
