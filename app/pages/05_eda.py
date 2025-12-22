@@ -57,10 +57,54 @@ if df is not None:
     if 'Revenue' not in numeric_cols and 'Revenue' in df.columns:
         numeric_cols.append('Revenue')
         
-    corr_matrix = df[numeric_cols].corr()
+    # row_id는 분석에서 제외
+    if 'row_id' in numeric_cols:
+        numeric_cols.remove('row_id')
+        
+    # 한글 폰트 설정 (OS별 처리)
+    import platform
+    if platform.system() == 'Darwin': # Mac
+        plt.rc('font', family='Apple SD Gothic Neo')
+    else: # Windows/Linux
+        plt.rc('font', family='Malgun Gothic')
+    plt.rc('axes', unicode_minus=False)
 
-    fig_corr, ax = plt.subplots(figsize=(10, 8))
+    # 컬럼명 한글 매핑
+    col_mapping = {
+        'Administrative': '관리 페이지 조회 수',
+        'Administrative_Duration': '관리 페이지 체류 시간',
+        'Informational': '정보 페이지 조회 수',
+        'Informational_Duration': '정보 페이지 체류 시간',
+        'ProductRelated': '제품 관련 페이지 조회 수',
+        'ProductRelated_Duration': '제품 관련 페이지 체류 시간',
+        'BounceRates': '이탈률',
+        'ExitRates': '종료률',
+        'PageValues': '페이지 가치',
+        'SpecialDay': '기념일',
+        'Month': '월',
+        'OperatingSystems': '운영체제',
+        'Browser': '브라우저',
+        'Region': '지역',
+        'TrafficType': '트래픽 유형',
+        'VisitorType': '방문자 유형',
+        'Weekend': '주말 여부',
+        'Revenue': '구매 여부'
+    }
+
+    corr_matrix = df[numeric_cols].rename(columns=col_mapping, index=col_mapping).corr()
+    
+    # 인덱스와 컬럼명을 매핑된 한글 이름으로 변경 (rename 후 corr()을 호출했으므로 컬럼은 이미 변경됨, 인덱스 확인)
+    # corr()은 컬럼명과 인덱스를 유지하므로, 위에서 rename을 먼저 하고 corr()을 구하는 것이 깔끔함.
+    # 다만, numeric_cols는 영어이므로, df[numeric_cols]로 선택 후 rename 수행.
+
+    fig_corr, ax = plt.subplots(figsize=(12, 10))
     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', linewidths=0.5, ax=ax)
+    ax.set_xticklabels(
+        ax.get_xticklabels(), 
+        rotation=25,          # 45도 회전
+        horizontalalignment='right' # 글자 끝을 축에 맞춤
+    )
+    
     st.pyplot(fig_corr)
     
     st.markdown("---")
@@ -78,11 +122,6 @@ if df is not None:
     if 'PageValues' in selectable_cols:
         selectable_cols.remove('PageValues')
         selectable_cols.insert(0, 'PageValues')
-
-    # row_id를 최하단으로 이동 (단순 식별자)
-    if 'row_id' in selectable_cols:
-        selectable_cols.remove('row_id')
-        selectable_cols.append('row_id')
 
     target_col = st.selectbox(
         "분석할 변수를 선택하세요:",
