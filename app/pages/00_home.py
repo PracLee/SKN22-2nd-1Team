@@ -10,7 +10,7 @@ from ui.header import render_header
 # - 반드시 render_header() 호출 전에 위치해야 함
 # =========================================================
 st.set_page_config(
-    page_title="SkN22-2nd-1Team",
+    page_title="김선생님... 코딩이 하고싶어요...",
     layout="wide"
 )
 
@@ -37,7 +37,7 @@ def load_image_from_drive(url: str):
 # - 공유 설정: 링크가 있는 모든 사용자 "보기 가능"
 # - 형식: https://drive.google.com/uc?id=FILE_ID
 # =========================================================
-HERO_IMAGE_URL = "https://drive.google.com/uc?id=16i1u68_w_JZZzH0kWOtlXPx5Lrz7Jir2"
+HERO_IMAGE_URL = "https://cdn.discordapp.com/attachments/1450006718611329178/1452473129501720686/image.png?ex=6949f083&is=69489f03&hm=56d43d1212e3d46c431615945661e0f3efcff116f46dd1f02b3bb7ce011cb427&"
 
 img_bytes = load_image_from_drive(HERO_IMAGE_URL)
 
@@ -52,7 +52,7 @@ st.markdown(
         flex-direction:column;
         align-items:center;
         justify-content:center;
-        margin-top:30px;
+        margin-top:10px;
       }
       .home-title{
         font-size:40px;
@@ -83,8 +83,20 @@ st.markdown(
 st.markdown(
     """
     <div class="home-wrap">
-      <div class="home-title">SkN22-2nd-1Team</div>
+      <div class="home-title">Mr. Kim… I want to code.</div>
       <div class="home-sub">데이터 기반 고객 이탈 예측 & 마케팅 전략 시뮬레이터</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# =========================================================
+# [STEP 7] 안내 문구
+# =========================================================
+st.markdown(
+    """
+    <div style="text-align:center; margin-top: -5px; opacity: 0.85;">
+      상단 메뉴를 통해 <b>세션 분석 · 이탈 예측 · 마케팅 액션</b>을 확인하세요.
     </div>
     """,
     unsafe_allow_html=True
@@ -99,15 +111,3 @@ if img_bytes:
     st.markdown("</div>", unsafe_allow_html=True)
 else:
     st.warning("⚠️ 홈 이미지를 불러오지 못했습니다. Google Drive URL(uc?id=...)과 공유 설정을 확인하세요.")
-
-# =========================================================
-# [STEP 7] 안내 문구
-# =========================================================
-st.markdown(
-    """
-    <div style="text-align:center; margin-top: 18px; opacity: 0.85;">
-      상단 메뉴를 통해 <b>세션 분석 · 이탈 예측 · 마케팅 액션</b>을 확인하세요.
-    </div>
-    """,
-    unsafe_allow_html=True
-)

@@ -34,6 +34,7 @@ ITEMS = [
     {"tab": "마케팅 액션 추천", "short": "마케팅 액션", "icon": "🎯"},
 ]
 
+
 def _inject_nav_css():
     if st.session_state.get("_nav_css_done"):
         return
@@ -42,6 +43,7 @@ def _inject_nav_css():
     st.markdown(
         """
 <style>
+
 /* 네비게이션 버튼(전체 st.button)에 적용됩니다. 페이지 내 다른 버튼도 동일 톤이면 오히려 통일감이 생깁니다. */
 div[data-testid="stButton"] > button {
   height: 64px;
@@ -71,7 +73,7 @@ div[data-testid="stButton"] > button[kind="primary"] {
 /* 헤더 아래 구분선 */
 .nav-divider {
   margin-top: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 0px;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
 }
@@ -79,6 +81,7 @@ div[data-testid="stButton"] > button[kind="primary"] {
         """,
         unsafe_allow_html=True,
     )
+
 
 def _go(tab: str):
     rel = Path(PAGE_MAP[tab]).as_posix()
@@ -93,12 +96,12 @@ def _go(tab: str):
     st.session_state.active_tab = tab
     st.switch_page(rel)
 
+
 def render_header(per_row: int = 6):
     _inject_nav_css()
 
     if "active_tab" not in st.session_state:
         st.session_state.active_tab = "홈"
-
 
     # 네비게이션(2줄 타일)
     for r in range(0, len(ITEMS), per_row):
@@ -106,7 +109,7 @@ def render_header(per_row: int = 6):
         cols = st.columns(len(row), gap="small")
         for col, it in zip(cols, row):
             with col:
-                is_active = (st.session_state.active_tab == it["tab"])
+                is_active = st.session_state.active_tab == it["tab"]
                 btn_type = "primary" if is_active else "secondary"
 
                 # 아이콘/텍스트 2줄 고정
